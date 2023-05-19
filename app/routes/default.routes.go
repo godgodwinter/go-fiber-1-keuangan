@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/godgodwinter/go-fiber-1-keuangan/app/configs"
+	"github.com/godgodwinter/go-fiber-1-keuangan/app/controllers"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -33,4 +34,8 @@ func DefaultRoutes(app *fiber.App) {
 		}
 		return c.JSON(data)
 	})
+	app_routes.Get("/example/:userId", controllers.GetAll)
+	app_routes.Get("/mongo/:userId", controllers.GetAUser)
+	app_routes.Post("/mongo", controllers.CreateUser)
+	app_routes.Get("/mongo", controllers.GetAllUser)
 }
