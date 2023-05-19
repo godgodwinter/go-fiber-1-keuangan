@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/godgodwinter/go-fiber-1-keuangan/app/configs"
+	"github.com/godgodwinter/go-fiber-1-keuangan/app/routes"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/monitor" //digunakan untuk menangani panic pada saat runtime. Panic terjadi ketika terjadi kesalahan yang tidak dapat ditangani pada saat aplikasi berjalan, dan biasanya menyebabkan program berhenti secara tiba-tiba. go recover digunakan untuk menangani panic sehingga aplikasi tidak berhenti dengan sendirinya.
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -52,6 +53,7 @@ func main() {
 	})
 
 	app.Use(recover.New())
+	routes.DefaultRoutes(app)
 
 	//   !monitor
 	app.Get("/metrics", monitor.New(monitor.Config{Title: "MyService Metrics Page"}))
