@@ -41,4 +41,10 @@ func DefaultRoutes(app *fiber.App) {
 	app_routes.Post("/mongo", controllers.CreateUser)
 	app_routes.Put("/mongo/:userId", controllers.UpdateUser)
 	app_routes.Delete("/mongo/:userId", controllers.DeleteUser)
+
+	app_routes.Get("/mongo_v2", controllers.V2_GetAll)
+	app_routes.Get("/mongo_v2/:userId", controllers.V2_GetUserWhereId)
+	app_routes.Post("/mongo_v2", controllers.V2_CreateUser)
+	app_routes.Put("/mongo_v2/:userId", controllers.V2_UpdateUser)
+	app_routes.Delete("/mongo_v2/:userId", controllers.V2_DeleteUser)
 }

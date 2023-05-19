@@ -1,43 +1,19 @@
 package services
 
-// ! basic crud with getting data from request body and params
+// ! v2
+// ! basic crud with data model from controller
+// ! dont use request.body / request.params on services
 import (
 	"context"
-	"fmt"
 	"time"
 
-	"github.com/go-playground/validator/v10"
-	"github.com/godgodwinter/go-fiber-1-keuangan/app/configs"
 	"github.com/godgodwinter/go-fiber-1-keuangan/app/models"
-	"github.com/godgodwinter/go-fiber-1-keuangan/app/types"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson" //add this
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type DefaultService struct{}
-
-var userCollection *mongo.Collection = configs.GetCollection(configs.DB, "users")
-
-func (s *DefaultService) GetBasic(c *fiber.Ctx) error {
-	_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	userId := c.Params("userId")
-	defer cancel()
-
-	data := types.ExampleStruct{
-		Name: c.Params("userId"),
-		Desc: "Ini userId " + userId,
-	}
-	return c.JSON(fiber.Map{
-		"success": true,
-		"data":    data,
-	})
-}
-
-var validate = validator.New()
-
-func (s *DefaultService) GetAll(c *fiber.Ctx) error {
+func (s *DefaultService) V2_GetAll(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	var users []models.User
 	defer cancel()
@@ -81,9 +57,8 @@ func (s *DefaultService) GetAll(c *fiber.Ctx) error {
 	})
 }
 
-func (s *DefaultService) GetUserWhereId(c *fiber.Ctx) error {
+func (s *DefaultService) V2_GetUserWhereId(c *fiber.Ctx, userId string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	userId := c.Params("userId")
 	var user models.User
 	defer cancel()
 
@@ -104,28 +79,9 @@ func (s *DefaultService) GetUserWhereId(c *fiber.Ctx) error {
 	})
 }
 
-func (s *DefaultService) CreateUser(c *fiber.Ctx) error {
+func (s *DefaultService) V2_CreateUser(c *fiber.Ctx, user models.User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	var user models.User
 	defer cancel()
-
-	//validate the request body
-	if err := c.BodyParser(&user); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"success": false,
-			"data":    err.Error(),
-			"error":   err.Error(),
-		})
-	}
-
-	//use the validator library to validate required fields
-	if validationErr := validate.Struct(&user); validationErr != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"success": false,
-			"data":    validationErr.Error(),
-			"error":   validationErr.Error(),
-		})
-	}
 
 	newUser := models.User{
 		Id:       primitive.NewObjectID(),
@@ -136,44 +92,27 @@ func (s *DefaultService) CreateUser(c *fiber.Ctx) error {
 
 	result, err := userCollection.InsertOne(ctx, newUser)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
-	}
-
-	return c.JSON(fiber.Map{
-		"success": true,
-		"data":    "Data berhasil dibuat!",
-		"userId":  result.InsertedID,
-	})
-}
-
-func (s *DefaultService) UpdateUser(c *fiber.Ctx) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	userId := c.Params("userId")
-	var user models.User
-	defer cancel()
-
-	objId, _ := primitive.ObjectIDFromHex(userId)
-
-	//validate the request body
-	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"success": false,
-			"data":    err.Error(),
+			"message": "Failed to create user",
 			"error":   err.Error(),
 		})
 	}
 
-	//use the validator library to validate required fields
-	if validationErr := validate.Struct(&user); validationErr != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"success": false,
-			"data":    validationErr.Error(),
-			"error":   validationErr.Error(),
-		})
-	}
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "User created successfully",
+		"userId":  result.InsertedID,
+	})
+}
+
+func (s *DefaultService) V2_UpdateUser(c *fiber.Ctx, userId string, user models.User) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	objId, _ := primitive.ObjectIDFromHex(userId)
 
 	update := bson.M{"name": user.Name, "location": user.Location, "title": user.Title}
-	fmt.Println(objId)
 	result, err := userCollection.UpdateOne(ctx, bson.M{"_id": objId}, bson.M{"$set": update})
 
 	if err != nil {
@@ -203,9 +142,8 @@ func (s *DefaultService) UpdateUser(c *fiber.Ctx) error {
 	})
 
 }
-func (s *DefaultService) DeleteUser(c *fiber.Ctx) error {
+func (s *DefaultService) V2_DeleteUser(c *fiber.Ctx, userId string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	userId := c.Params("userId")
 	defer cancel()
 
 	objId, _ := primitive.ObjectIDFromHex(userId)
