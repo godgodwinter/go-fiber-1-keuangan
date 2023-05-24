@@ -24,7 +24,7 @@ func V2_GetUserWhereId(c *fiber.Ctx) error {
 //		return service.V2_CreateUser(c)
 //	}
 func V2_CreateUser(c *fiber.Ctx) error {
-	var user models.User
+	var user models.UserModel
 
 	// Parse request body into user struct
 	if err := c.BodyParser(&user); err != nil {
@@ -50,7 +50,7 @@ func V2_CreateUser(c *fiber.Ctx) error {
 func V2_UpdateUser(c *fiber.Ctx) error {
 	service := services.DefaultService{}
 	userId := c.Params("userId")
-	var user models.User
+	var user models.UserModel
 
 	//validate the request body
 	if err := c.BodyParser(&user); err != nil {

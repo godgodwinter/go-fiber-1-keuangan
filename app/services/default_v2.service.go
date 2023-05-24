@@ -15,7 +15,7 @@ import (
 
 func (s *DefaultService) V2_GetAll(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	var users []models.User
+	var users []models.UserModel
 	defer cancel()
 
 	cursor, err := userCollection.Find(ctx, bson.M{})
@@ -29,7 +29,7 @@ func (s *DefaultService) V2_GetAll(c *fiber.Ctx) error {
 	defer cursor.Close(ctx)
 	// Mengiterasi setiap dokumen dalam cursor dan menambahkannya ke slice users
 	for cursor.Next(ctx) {
-		var user models.User
+		var user models.UserModel
 
 		// Mendekode dokumen ke struct user
 		if err := cursor.Decode(&user); err != nil {
@@ -59,7 +59,7 @@ func (s *DefaultService) V2_GetAll(c *fiber.Ctx) error {
 
 func (s *DefaultService) V2_GetUserWhereId(c *fiber.Ctx, userId string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	var user models.User
+	var user models.UserModel
 	defer cancel()
 
 	objId, _ := primitive.ObjectIDFromHex(userId)
@@ -79,11 +79,11 @@ func (s *DefaultService) V2_GetUserWhereId(c *fiber.Ctx, userId string) error {
 	})
 }
 
-func (s *DefaultService) V2_CreateUser(c *fiber.Ctx, user models.User) error {
+func (s *DefaultService) V2_CreateUser(c *fiber.Ctx, user models.UserModel) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	newUser := models.User{
+	newUser := models.UserModel{
 		Id:       primitive.NewObjectID(),
 		Name:     user.Name,
 		Location: user.Location,
@@ -106,7 +106,7 @@ func (s *DefaultService) V2_CreateUser(c *fiber.Ctx, user models.User) error {
 	})
 }
 
-func (s *DefaultService) V2_UpdateUser(c *fiber.Ctx, userId string, user models.User) error {
+func (s *DefaultService) V2_UpdateUser(c *fiber.Ctx, userId string, user models.UserModel) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -123,7 +123,7 @@ func (s *DefaultService) V2_UpdateUser(c *fiber.Ctx, userId string, user models.
 		})
 	}
 	//get updated user details
-	var updatedUser models.User
+	var updatedUser models.UserModel
 	if result.MatchedCount == 1 {
 		err := userCollection.FindOne(ctx, bson.M{"_id": objId}).Decode(&updatedUser)
 
